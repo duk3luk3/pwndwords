@@ -23,7 +23,14 @@ class Password(Base):
     id = Column(Integer, primary_key=True)
     hash = Column(BYTEA)
 
-@app.route('/<hash>')
+from werkzeug.routing import PathConverter
+
+class EverythingConverter(PathConverter):
+    regex = '.*?'
+
+app.url_map.converters['everything'] = EverythingConverter
+
+@app.route('/<everything:hash>')
 def lookup(hash):
     def try_decode(hash):
         if len(hash)==40 and not request.args.get('originalPasswordIsAHash'):
