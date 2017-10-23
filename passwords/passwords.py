@@ -26,11 +26,10 @@ class Password(Base):
 from werkzeug.routing import PathConverter
 
 class EverythingConverter(PathConverter):
-    regex = '.*?'
+    regex = '..*?'
 
 app.url_map.converters['everything'] = EverythingConverter
 
-@app.route('/<everything:hash>')
 def lookup(hash):
     def try_decode(hash):
         if len(hash)==40 and not request.args.get('originalPasswordIsAHash'):
@@ -51,3 +50,11 @@ def lookup(hash):
             return ('Not found!', 404, {'Access-Control-Allow-Origin': '*', 'Content-Type': 'text/plain'})
     else:
         return ('No password', 400, {'Access-Control-Allow-Origin': '*', 'Content-Type': 'text/plain'})
+
+@app.route('/<everything:hash>')
+def by_path(hash):
+    return lookup(hash)
+
+@app.route('/')
+def by_param():
+    return lookup(request.args.get('password'))
