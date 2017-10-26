@@ -3,8 +3,11 @@ from flask_sqlalchemy import SQLAlchemy
 from flask import request
 
 app = Flask(__name__)
+# Default settings
 app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql+psycopg2://erlacher@/passwords'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+# Override settings as needed (http://flask.pocoo.org/docs/dev/config/#configuring-from-files)
+app.config.from_envvar('PWNDPW_SETTINGS')
 db = SQLAlchemy(app)
 
 from sqlalchemy import Column, Integer, text
@@ -23,6 +26,7 @@ class Password(Base):
     id = Column(Integer, primary_key=True)
     hash = Column(BYTEA)
 
+# Everything converter adapted from https://stackoverflow.com/a/24001029
 from werkzeug.routing import PathConverter
 
 class EverythingConverter(PathConverter):
@@ -51,10 +55,15 @@ def lookup(hash):
     else:
         return ('No password', 400, {'Access-Control-Allow-Origin': '*', 'Content-Type': 'text/plain'})
 
+# Route that works like https://haveibeenpwned.com/API/v2#PwnedPasswords
+# (and has similar problems with url parsing)
 @app.route('/<everything:hash>')
 def by_path(hash):
     return lookup(hash)
 
+# This route exists in case you have problems with the path-like passing of
+# the password and hash, since e.g. having / characters in them can screw you up.
+# Both flask/werkzeug and your webserver can screw you here.
 @app.route('/')
 def by_param():
     return lookup(request.args.get('password'))
