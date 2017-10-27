@@ -7,7 +7,7 @@ app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql+psycopg2://erlacher@/passwords'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 # Override settings as needed (http://flask.pocoo.org/docs/dev/config/#configuring-from-files)
-app.config.from_envvar('PWNDPW_SETTINGS')
+app.config.from_envvar('PWNDPW_SETTINGS', silent=True)
 db = SQLAlchemy(app)
 
 from sqlalchemy import Column, Integer, text
